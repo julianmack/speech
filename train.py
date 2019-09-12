@@ -89,6 +89,9 @@ def run(config):
     model = model_class(preproc.input_dim,
                         preproc.vocab_size,
                         model_cfg)
+    print("input_dim size: ", preproc.input_dim)
+    print("preproc.vocab_size: ", preproc.vocab_size)
+    
     model.cuda() if use_cuda else model.cpu()
 
     # Optimizer
@@ -120,6 +123,23 @@ def run(config):
             speech.save(model, preproc,
                     config["save_path"], tag="best")
 
+def _train(config_fp, deterministic):
+    """Run the same functionality as if __main__ from within a function"""
+    with open(config_fp, 'r') as fid:
+        config = json.load(fid)
+
+    random.seed(config["seed"])
+    torch.manual_seed(config["seed"])
+
+    tb.configure(config["save_path"])
+
+    use_cuda = torch.cuda.is_available()
+
+    if use_cuda and deterministic:
+        torch.backends.cudnn.enabled = False
+    run(config)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
             description="Train a speech model.")
@@ -131,16 +151,4 @@ if __name__ == "__main__":
         help="Run in deterministic mode (no cudnn). Only works on GPU.")
     args = parser.parse_args()
 
-    with open(args.config, 'r') as fid:
-        config = json.load(fid)
-
-    random.seed(config["seed"])
-    torch.manual_seed(config["seed"])
-
-    tb.configure(config["save_path"])
-
-    use_cuda = torch.cuda.is_available()
-
-    if use_cuda and args.deterministic:
-        torch.backends.cudnn.enabled = False
-    run(config)
+    _train(args.config, args.deterministic)

@@ -70,6 +70,8 @@ class Transducer(model.Model):
         # Combine the input states and the output states
         x = x.unsqueeze(dim=2)
         y = y.unsqueeze(dim=1)
+
+        #julian: this following line is weird - why not concat [x, y]?
         out = self.fc1(x) + self.fc1(y)
         out = nn.functional.relu(out)
         out = self.fc2(out)
