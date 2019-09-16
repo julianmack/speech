@@ -1,0 +1,47 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rnn-t-baseline
+spec:
+  template:
+    metadata:
+      labels:
+        experiment: rnn-t-baseline-1
+    spec:
+      securityContext:
+        supplementalGroups: [5555]
+      restartPolicy: OnFailure
+      containers:
+        - name: rnnt
+          image: gcr.io/myrtle-deepspeech/awni-speech:first
+          command: ["cd speech && ls"]
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 7000m
+              memory: 160Gi
+              nvidia.com/gpu: 1
+          volumeMounts:
+            - name: aws-credentials
+              mountPath: "/home/ubuntu/.aws/"
+              readOnly: true
+            - name: nfs-pvc
+              mountPath: "/home/ubuntu/persistent"
+            - name: in-memory-data
+              mountPath: "/tmp/data/cache"
+            - name: shm
+              mountPath: "/dev/shm"
+      initContainers:
+      - name: nfs-pvc
+        persistentVolumeClaim:
+          claimName: nfs-pvc
+      - name: in-memory-data
+        emptyDir:
+          sizeLimit: 60Gi
+          medium: "Memory"
+      - name: shm
+        emptyDir:
+          sizeLimit: 2Gi
+          medium: "Memory"
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-tesla-v100
