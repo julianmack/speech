@@ -3,11 +3,11 @@ FROM nvidia/cuda:9.1-cudnn7-devel-ubuntu16.04
 LABEL maintainer="julian@myrtle.ai"
 
 
+ENV PATH /opt/conda/bin:$PATH
 
 #- Upgrade system and install dependencies -------------------------------------
-RUN apt-get update && \
+RUN apt-get update --fix-missing && \
     apt-get install -y software-properties-common && \
-    add-apt-repository ppa:deadsnakes/ppa && \
     apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
@@ -23,18 +23,22 @@ RUN apt-get update && \
                     libeigen3-dev \
                     liblzma-dev \
                     libsndfile1 \
-                    python3.6 \
-                    python3.6-dev \
                     sudo \
                     vim && \
     apt-get remove -y python3.5 && \
     apt-get autoremove -y && \
+		apt-get update && \
+		apt-get upgrade -y && \
     rm -rf /var/lib/apt/lists
-
 #- Enable passwordless sudo for users under the "sudo" group -------------------
 RUN sed -i.bkp -e \
       's/%sudo\s\+ALL=(ALL\(:ALL\)\?)\s\+ALL/%sudo ALL=NOPASSWD:ALL/g' \
       /etc/sudoers
+
+RUN apt-get update && apt-get update && \
+		apt-get install wget && \
+		apt-get update && apt-get update
+
 
 #- Create data group for NFS mount --------------------------------------------
 RUN groupadd --system data --gid 5555
@@ -46,9 +50,29 @@ RUN groupadd -r ubuntu && \
             --gid ubuntu \
             ubuntu && \
     usermod -aG sudo ubuntu
+
+ENV SHELL /bin/bash
+
+#Install conda -------------------------------------------
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda2-4.5.11-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh && \
+    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
+    echo "conda activate base" >> ~/.bashrc
+
+
+# update conda --------------------------------
+RUN conda update conda
+RUN conda install conda-build
+
+RUN conda install python=3.6.8 && \
+		conda create --name awni python=3.6.8 && \
+		echo "source activate awni" > ~/.bashrc
+ENV PATH /opt/conda/envs/env/bin:$PATH
+
 USER ubuntu
 WORKDIR /home/ubuntu
-
 
 
 #- Install Python packages -----------------------------------------------------
@@ -69,28 +93,29 @@ RUN pip3 install --user \
     rm -r /home/ubuntu/.cache/pip && \
 		pip3 install jupyter jupyterlab --user
 
+
+
+
+
 #- Install speech package --------------------------------------------------
 COPY --chown=ubuntu:ubuntu . speech
 RUN cd speech && pip3 install --user .
-#ENTRYPOINT ["/bin/bash", "-c", "cd", "speech", "&&", "ls", "&&", "source", "setup.sh"]
 
 
 
 
 #- Setup Jupyter ---------------------------------------------------------------
 EXPOSE 9999
-ENV SHELL /bin/bash
+
 
 
 #set env variables for speech repo ---------------------------------------------
-ENV PYTHONPATH /home/ubuntu/:/home/ubuntu/libs/warp-ctc/pytorch_binding:/home/ubuntu/libs:${PYTHONPATH}
+ENV PYTHONPATH /home/ubuntu/speech:/home/ubuntu/speech/libs/warp-ctc/pytorch_binding:/home/ubuntu/speech/libs:${PYTHONPATH}
+ENV LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/home/ubuntu/speech/libs/warp-ctc/build
 
-ENV LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/home/ubuntu/libs/warp-ctc/build
-
-#ENV PYTHONPATH=`pwd`:`pwd`/libs/warp-ctc/pytorch_binding:`pwd`/libs:$PYTHONPATH
-#ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/libs/warp-ctc/build
 
 RUN ls && ls && ls && echo $PYTHONPATH
+RUN python3 --version
 RUN cd speech/tests && pytest
 
 CMD ["jupyter", "lab", \

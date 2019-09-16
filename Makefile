@@ -25,11 +25,14 @@ libs/apex:
 
 clean: cleansmall
 		rm -rf libs
+		find . -type d -name "__pycache*" -exec rm -r {} +
+
 
 buildsmall:
 	sudo docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
 
 cleansmall:
+		find . -type d -name "__pycache*" -exec rm -r {} +
 		sudo docker images -q $(IMAGE_NAME):$(IMAGE_TAG) | \
 				xargs --no-run-if-empty sudo docker rmi
 		sudo docker images -q $(IMAGE_REPOSITORY):$(IMAGE_TAG) | \
