@@ -5,7 +5,6 @@ from __future__ import print_function
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.autograd as autograd
 
 import transducer.decoders as td
 import transducer.functions.transducer as transducer

@@ -14,7 +14,7 @@ spec:
       containers:
         - name: rnnt
           image: gcr.io/myrtle-deepspeech/awni-speech:first
-          command: ["cd speech && ls"]
+          command: ["./speech/experiments/baseline/run.sh"]
           imagePullPolicy: Always
           resources:
             limits:

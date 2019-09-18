@@ -91,11 +91,12 @@ def run(config):
                         model_cfg)
     print("input_dim size: ", preproc.input_dim)
     print("preproc.vocab_size: ", preproc.vocab_size)
-    
+
     model.cuda() if use_cuda else model.cpu()
 
-    # Optimizer
-    optimizer = torch.optim.SGD(model.parameters(),
+    # Optimizer - (julian) - changed this to Adam
+    assert opt_cfg.get("momentum") is None, "Adam does not accept `momentum` parameter"
+    optimizer = torch.optim.Adam(model.parameters(),
                     lr=opt_cfg["learning_rate"],
                     momentum=opt_cfg["momentum"])
 

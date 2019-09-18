@@ -1,16 +1,15 @@
 {
   "seed": 2017,
-  "save_path": "examples/timit/models/trans_best",
+  "save_path": "/home/ubuntu/persistent/experiments/rnnt/baseline/first/",
   "data": {
-    "train_set": "examples/timit/data/timit/train.json",
-    "dev_set": "examples/timit/data/timit/dev.json",
+    "train_set": "Data/Librispeech/train-clean-100.json",
+    "dev_set": "Data/Librispeech/dev-clean.json",
     "start_and_end": false
   },
   "optimizer": {
-    "batch_size": 8,
-    "epochs": 200,
+    "batch_size": 16,
+    "epochs": 1,
     "learning_rate": 0.001,
-    "momentum": 0.0
   },
   "model": {
     "class": "Transducer",

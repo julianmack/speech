@@ -94,16 +94,16 @@ RUN pip3 install --user \
 		pip3 install jupyter jupyterlab --user
 
 
-#- Install speech package --------------------------------------------------
-COPY --chown=ubuntu:ubuntu . speech
-RUN cd speech && pip3 install --user .
-
 # Install transduce and warp ctc--------------------------------------
 RUN git clone https://github.com/awni/transducer.git libs/transducer && \
       cd libs/transducer; python3 build.py
 RUN git clone https://github.com/awni/warp-ctc.git libs/warp-ctc && \
       cd libs/warp-ctc; mkdir build; cd build; cmake ../ && make; \
       cd ../pytorch_binding; python3 build.py
+
+#- Install speech package --------------------------------------------------
+COPY --chown=ubuntu:ubuntu . speech
+RUN cd speech && pip3 install --user .
 
 
 #set env variables for speech repo ---------------------------------------------
