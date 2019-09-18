@@ -94,29 +94,25 @@ RUN pip3 install --user \
 		pip3 install jupyter jupyterlab --user
 
 
-
-
-
 #- Install speech package --------------------------------------------------
 COPY --chown=ubuntu:ubuntu . speech
 RUN cd speech && pip3 install --user .
 
-
-
-
-#- Setup Jupyter ---------------------------------------------------------------
-EXPOSE 9999
-
+# Install transduce and warp ctc--------------------------------------
+RUN git clone https://github.com/awni/transducer.git libs/transducer && \
+      cd libs/transducer; python3 build.py
+RUN git clone https://github.com/awni/warp-ctc.git libs/warp-ctc && \
+      cd libs/warp-ctc; mkdir build; cd build; cmake ../ && make; \
+      cd ../pytorch_binding; python3 build.py
 
 
 #set env variables for speech repo ---------------------------------------------
-ENV PYTHONPATH /home/ubuntu/speech:/home/ubuntu/speech/libs/warp-ctc/pytorch_binding:/home/ubuntu/speech/libs:${PYTHONPATH}
-ENV LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/home/ubuntu/speech/libs/warp-ctc/build
 
 
-RUN ls && ls && ls && echo $PYTHONPATH
-RUN python3 --version
-RUN cd speech/tests && pytest
+RUN echo "source speech/setup.sh" > .bashrc
+
+#- Setup Jupyter ---------------------------------------------------------------
+EXPOSE 9999
 
 CMD ["jupyter", "lab", \
      "--ip=0.0.0.0",   \

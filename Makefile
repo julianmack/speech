@@ -14,8 +14,8 @@ transduce:
 	git clone https://github.com/awni/transducer.git libs/transducer
 	cd libs/transducer; python3 build.py
 
-build: transduce warp
-	sudo docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+build:
+	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
 
 
 
@@ -27,9 +27,6 @@ clean: cleansmall
 		rm -rf libs
 		find . -type d -name "__pycache*" -exec rm -r {} +
 
-
-buildsmall:
-	sudo docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
 
 cleansmall:
 		find . -type d -name "__pycache*" -exec rm -r {} +
