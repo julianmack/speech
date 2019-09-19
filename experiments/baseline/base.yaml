@@ -14,7 +14,12 @@ spec:
       containers:
         - name: rnnt
           image: gcr.io/myrtle-deepspeech/awni-speech:first
-          command: ["./speech/experiments/baseline/run.sh"]
+          command: ["/bin/sh","-c"]
+          args: ["cd speech && \
+          			mkdir ~/Data && \
+                python3 examples/librispeech/download.py ~/Data && \
+                python3 examples/librispeech/preprocess.py ~/Data && \
+                python3 train.py ~/speech/configs/strawperson.json"]
           imagePullPolicy: Always
           resources:
             limits:
@@ -31,13 +36,17 @@ spec:
               mountPath: "/tmp/data/cache"
             - name: shm
               mountPath: "/dev/shm"
-      initContainers:
+
+      volumes:
+      - name: aws-credentials
+        secret:
+          secretName: aws-credentials
       - name: nfs-pvc
         persistentVolumeClaim:
           claimName: nfs-pvc
       - name: in-memory-data
         emptyDir:
-          sizeLimit: 60Gi
+          sizeLimit: 24Gi
           medium: "Memory"
       - name: shm
         emptyDir:

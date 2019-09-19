@@ -36,7 +36,7 @@ RUN sed -i.bkp -e \
       /etc/sudoers
 
 RUN apt-get update && apt-get update && \
-		apt-get install wget && \
+    apt-get install -y wget && \
 		apt-get update && apt-get update
 
 
@@ -107,9 +107,12 @@ RUN cd speech && pip3 install --user .
 
 
 #set env variables for speech repo ---------------------------------------------
-
-
 RUN echo "source speech/setup.sh" > .bashrc
+
+#install ffmpeg for preprocessing -----------------------------------------
+RUN sudo apt-get update && sudo apt-get update && \
+    sudo apt-get install -y ffmpeg && \
+		sudo apt-get update && sudo apt-get update
 
 #- Setup Jupyter ---------------------------------------------------------------
 EXPOSE 9999

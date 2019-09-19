@@ -124,6 +124,36 @@ def run(config):
             speech.save(model, preproc,
                     config["save_path"], tag="best")
 
+def restore_or_init_model(config):
+    """Restores the model if `config['save_path']` has a model available."""
+
+    expdir = config['save_path']
+
+
+    
+    if state_dict_path is None and not args.no_resume_from_exp_dir:
+        state_dict_path = get_last_state_dict_path(
+                            args.model,
+                            global_state.exp_dir,
+                            not args.disable_compress_state_dict)
+
+    if state_dict_path is not None:
+        logging.debug('restoring model from %r' % state_dict_path)
+        _load_model(model,
+                    state_dict_path,
+                    not args.disable_compress_state_dict)
+    else:
+        logging.debug('randomly initialising model')
+        exp_dir = GlobalState.get_singleton().exp_dir
+        _save_model(args.model,
+                    model,
+                    exp_dir,
+                    not args.disable_compress_state_dict)
+
+    return model
+
+
+
 def _train(config_fp, deterministic):
     """Run the same functionality as if __main__ from within a function"""
     with open(config_fp, 'r') as fid:

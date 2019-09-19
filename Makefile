@@ -14,8 +14,15 @@ transduce:
 	git clone https://github.com/awni/transducer.git libs/transducer
 	cd libs/transducer; python3 build.py
 
+gcp:
+	docker tag $(IMAGE_NAME):$(IMAGE_TAG) gcr.io/myrtle-deepspeech/$(IMAGE_NAME):$(IMAGE_TAG)
+	docker push gcr.io/myrtle-deepspeech/$(IMAGE_NAME):$(IMAGE_TAG)
+
+
 build:
 	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+
+build/push: build gcp	
 
 
 libs/apex:
@@ -34,4 +41,4 @@ cleansmall:
 		sudo docker images -q $(IMAGE_REPOSITORY):$(IMAGE_TAG) | \
 				xargs --no-run-if-empty sudo docker rmi
 
-.PHONY: build clean
+.PHONY: build clean gcp

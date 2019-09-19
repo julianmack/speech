@@ -2,8 +2,8 @@
   "seed": 2017,
   "save_path": "/home/ubuntu/persistent/experiments/rnnt/baseline/first/",
   "data": {
-    "train_set": "Data/Librispeech/train-clean-100.json",
-    "dev_set": "Data/Librispeech/dev-clean.json",
+    "train_set": "Data/Librispeech/train_clean_100.json",
+    "dev_set": "Data/Librispeech/dev_clean.json",
     "start_and_end": false
   },
   "optimizer": {
