@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 import torch.optim
 import tqdm
+import os
 
 import speech
 import speech.loader as loader
@@ -85,10 +86,8 @@ def run(config):
                         preproc, batch_size)
 
     # Model
-    model_class = eval("models." + model_cfg["class"])
-    model = model_class(preproc.input_dim,
-                        preproc.vocab_size,
-                        model_cfg)
+    model = restore_or_init_model(config, preproc)
+
     print("input_dim size: ", preproc.input_dim)
     print("preproc.vocab_size: ", preproc.vocab_size)
 
@@ -124,33 +123,41 @@ def run(config):
             speech.save(model, preproc,
                     config["save_path"], tag="best")
 
-def restore_or_init_model(config):
+def restore_or_init_model(config, preproc):
     """Restores the model if `config['save_path']` has a model available."""
 
     expdir = config['save_path']
+    model_cfg = config["model"]
 
+    model_fn = None
+    model_fp = None
 
-    
-    if state_dict_path is None and not args.no_resume_from_exp_dir:
-        state_dict_path = get_last_state_dict_path(
-                            args.model,
-                            global_state.exp_dir,
-                            not args.disable_compress_state_dict)
+    for path, subdirs, files in os.walk(expdir):
+        for file in files:
 
-    if state_dict_path is not None:
-        logging.debug('restoring model from %r' % state_dict_path)
-        _load_model(model,
-                    state_dict_path,
-                    not args.disable_compress_state_dict)
-    else:
-        logging.debug('randomly initialising model')
-        exp_dir = GlobalState.get_singleton().exp_dir
-        _save_model(args.model,
-                    model,
-                    exp_dir,
-                    not args.disable_compress_state_dict)
+            if speech.utils.MODEL in file:
+
+                model_fn = file.split("/")[-1]
+
+                #no tag used when the model is best
+                if model_fn == speech.utils.MODEL:
+                    assert model_fp is None, "Multiple model.pth files present in `config['save_path']`"
+                    model_fp = file
+
+    #init model randomly
+    model_class = eval("models." + model_cfg["class"])
+    model = model_class(preproc.input_dim,
+                        preproc.vocab_size,
+                        model_cfg)
+
+    if model_fp is not None:
+        #load saved weights
+        weights = torch.load(model_fp)
+        model.load_state_dict(weights)
 
     return model
+
+
 
 
 

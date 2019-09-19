@@ -3,7 +3,7 @@ import os
 import pickle
 import torch
 
-MODEL = "model"
+MODEL = "model.pth"
 PREPROC = "preproc.pyc"
 
 def get_names(path, tag):
@@ -24,5 +24,3 @@ def load(path, tag=""):
     with open(preproc_n, 'rb') as fid:
         preproc = pickle.load(fid)
     return model, preproc
-
-

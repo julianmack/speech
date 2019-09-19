@@ -35,9 +35,9 @@ RUN sed -i.bkp -e \
       's/%sudo\s\+ALL=(ALL\(:ALL\)\?)\s\+ALL/%sudo ALL=NOPASSWD:ALL/g' \
       /etc/sudoers
 
-RUN apt-get update && apt-get update && \
+RUN apt-get update && \
     apt-get install -y wget && \
-		apt-get update && apt-get update
+		apt-get update
 
 
 #- Create data group for NFS mount --------------------------------------------
@@ -110,9 +110,9 @@ RUN cd speech && pip3 install --user .
 RUN echo "source speech/setup.sh" > .bashrc
 
 #install ffmpeg for preprocessing -----------------------------------------
-RUN sudo apt-get update && sudo apt-get update && \
+RUN sudo apt-get update --fix-missing && \
     sudo apt-get install -y ffmpeg && \
-		sudo apt-get update && sudo apt-get update
+		sudo apt-get update --fix-missing
 
 #- Setup Jupyter ---------------------------------------------------------------
 EXPOSE 9999
