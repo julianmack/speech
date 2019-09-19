@@ -31,6 +31,7 @@ class Preprocessor():
 
         # Compute data mean, std from sample
         audio_files = [d['audio'] for d in data]
+
         random.shuffle(audio_files)
         self.mean, self.std = compute_mean_std(audio_files[:max_samples])
         self._input_dim = self.mean.shape[0]
@@ -167,4 +168,14 @@ def log_specgram(audio, sample_rate, window_size=20,
 
 def read_data_json(data_json):
     with open(data_json) as fid:
-        return [json.loads(l) for l in fid]
+        data = [json.loads(l) for l in fid]
+
+    #short term hack - replace local username with cloud user
+    for dat in data:
+        dat['audio'] = dat['audio'].replace("julian", "ubuntu")
+
+
+
+
+
+    return data

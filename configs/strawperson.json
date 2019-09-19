@@ -2,14 +2,15 @@
   "seed": 2017,
   "save_path": "/home/ubuntu/persistent/experiments/rnnt/baseline/first/",
   "data": {
-    "train_set": "Data/Librispeech/train_clean_100.json",
-    "dev_set": "Data/Librispeech/dev_clean.json",
+    "train_set": "/home/ubuntu/Data/LibriSpeech/train-clean-100.json",
+    "dev_set": "/home/ubuntu/Data/LibriSpeech/dev-clean.json",
     "start_and_end": false
   },
   "optimizer": {
-    "batch_size": 16,
-    "epochs": 1,
+    "batch_size": 8,
+    "epochs": 100,
     "learning_rate": 0.001,
+    "momentum": 0.0
   },
   "model": {
     "class": "Transducer",
@@ -30,13 +31,13 @@
         ]
       ],
       "rnn": {
-        "dim": 2048,
+        "dim": 1024,
         "bidirectional": false,
         "layers": 4
       }
     },
     "decoder": {
-      "embedding_dim": 2048,
+      "embedding_dim": 1024,
       "layers": 2
     }
   }

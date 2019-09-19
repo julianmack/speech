@@ -23,10 +23,13 @@ def run_epoch(model, optimizer, train_ldr, it, avg_loss):
 
     model_t = 0.0; data_t = 0.0
     end_t = time.time()
-    tq = tqdm.tqdm(train_ldr)
-    for batch in tq:
+
+    for idx, batch in enumerate(tqdm.tqdm(train_ldr)):
+        model.train()
+        batch = list(batch) #this line isn't necessary w. py 2.7
         start_t = time.time()
         optimizer.zero_grad()
+
         loss = model.loss(batch)
         loss.backward()
 
@@ -42,6 +45,7 @@ def run_epoch(model, optimizer, train_ldr, it, avg_loss):
         exp_w = 0.99
         avg_loss = exp_w * avg_loss + (1 - exp_w) * loss
         tb.log_value('train_loss', loss, it)
+
         tq.set_postfix(iter=it, loss=loss,
                 avg_loss=avg_loss, grad_norm=grad_norm,
                 model_time=model_t, data_time=data_t)
@@ -52,9 +56,10 @@ def run_epoch(model, optimizer, train_ldr, it, avg_loss):
 def eval_dev(model, ldr, preproc):
     losses = []; all_preds = []; all_labels = []
 
-    model.set_eval()
+    model.eval()
 
     for batch in tqdm.tqdm(ldr):
+        batch = list(batch) #this line isn't necessary w. py 2.7
         preds = model.infer(batch)
         loss = model.loss(batch)
         losses.append(loss.data[0])
@@ -91,13 +96,12 @@ def run(config):
     print("input_dim size: ", preproc.input_dim)
     print("preproc.vocab_size: ", preproc.vocab_size)
 
-    model.cuda() if use_cuda else model.cpu()
+    model.cuda() if torch.cuda.is_available() else model.cpu()
 
     # Optimizer - (julian) - changed this to Adam
-    assert opt_cfg.get("momentum") is None, "Adam does not accept `momentum` parameter"
+    #assert opt_cfg.get("momentum") is None, "Adam does not accept `momentum` parameter"
     optimizer = torch.optim.Adam(model.parameters(),
-                    lr=opt_cfg["learning_rate"],
-                    momentum=opt_cfg["momentum"])
+                    lr=opt_cfg["learning_rate"])
 
     run_state = (0, 0)
     best_so_far = float("inf")
@@ -135,12 +139,12 @@ def restore_or_init_model(config, preproc):
     for path, subdirs, files in os.walk(expdir):
         for file in files:
 
-            if speech.utils.MODEL in file:
+            if speech.utils.io.MODEL in file:
 
                 model_fn = file.split("/")[-1]
 
                 #no tag used when the model is best
-                if model_fn == speech.utils.MODEL:
+                if model_fn == speech.utils.io.MODEL:
                     assert model_fp is None, "Multiple model.pth files present in `config['save_path']`"
                     model_fp = file
 

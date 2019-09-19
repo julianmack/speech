@@ -66,12 +66,27 @@ class Transducer(model.Model):
 
         y, _ = self.dec_rnn(y)
 
+        if False:
+            print("y before", y.shape)
+            print("x before", x.shape)
+
         # Combine the input states and the output states
         x = x.unsqueeze(dim=2)
         y = y.unsqueeze(dim=1)
 
         #julian: this following line is weird - why not concat [x, y]?
-        out = self.fc1(x) + self.fc1(y)
+        out1 = self.fc1(x)
+        out2 = self.fc1(y)
+        out = out1 + out2
+
+        if False:
+            print("y after", y.shape)
+            print("x after", x.shape)
+            print("out1.shape", out1.shape)
+            print("out2.shape", out2.shape)
+            print("out.shape", out.shape)
+
+
         out = nn.functional.relu(out)
         out = self.fc2(out)
         out = nn.functional.log_softmax(out, dim=3)
@@ -85,12 +100,11 @@ class Transducer(model.Model):
         y_lens = torch.IntTensor([len(l) for l in labels])
         y = torch.IntTensor([l for label in labels for l in label])
         batch = [x, y, x_lens, y_lens]
-        if self.volatile:
-            for v in batch:
-                v.volatile = True
+
         return batch
 
     def infer(self, batch, beam_size=4):
+        self.eval()
         out = self(batch)
         out = out.cpu().data.numpy()
         preds = []
@@ -112,6 +126,5 @@ class Transducer(model.Model):
         for e, l in enumerate(labels):
             cat_labels[e, :len(l)] = l
         labels = torch.LongTensor(cat_labels)
-        if self.volatile:
-            labels.volatile = True
+
         return labels
