@@ -6,7 +6,7 @@ spec:
   template:
     metadata:
       labels:
-        experiment: rnn-t-baseline-1
+        experiment: rnn-t-baseline-2
     spec:
       securityContext:
         supplementalGroups: [5555]
@@ -14,8 +14,9 @@ spec:
       containers:
         - name: rnnt
           image: gcr.io/myrtle-deepspeech/awni-speech:first
-          command: ["/bin/sh","-c"]
-          args: ["cd speech && \
+          command: ["/bin/bash", "-c"]
+          args: ["source speech/setup.sh && \
+                cd speech && \
           			mkdir ~/Data && \
                 python3 examples/librispeech/download.py ~/Data && \
                 python3 examples/librispeech/preprocess.py ~/Data && \
@@ -24,7 +25,7 @@ spec:
           resources:
             limits:
               cpu: 7000m
-              memory: 160Gi
+              #memory: 160Gi
               nvidia.com/gpu: 1
           volumeMounts:
             - name: aws-credentials

@@ -74,7 +74,6 @@ class Transducer(model.Model):
         x = x.unsqueeze(dim=2)
         y = y.unsqueeze(dim=1)
 
-        #julian: this following line is weird - why not concat [x, y]?
         out1 = self.fc1(x)
         out2 = self.fc1(y)
         out = out1 + out2
@@ -105,14 +104,15 @@ class Transducer(model.Model):
 
     def infer(self, batch, beam_size=4):
         self.eval()
-        out = self(batch)
-        out = out.cpu().data.numpy()
-        preds = []
-        for e, (i, l) in enumerate(zip(*batch)):
-            T = i.shape[0]
-            U = len(l) + 1
-            lp = out[e, :T, :U, :]
-            preds.append(td.decode_static(lp, beam_size, blank=self.blank)[0])
+        with torch.no_grad():
+            out = self(batch)
+            out = out.cpu().data.numpy()
+            preds = []
+            for e, (i, l) in enumerate(zip(*batch)):
+                T = i.shape[0]
+                U = len(l) + 1
+                lp = out[e, :T, :U, :]
+                preds.append(td.decode_static(lp, beam_size, blank=self.blank)[0])
         return preds
 
     def label_collate(self, labels):

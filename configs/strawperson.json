@@ -1,13 +1,13 @@
 {
   "seed": 2017,
-  "save_path": "/home/ubuntu/persistent/experiments/rnnt/baseline/first/",
+  "save_path": "/home/ubuntu/persistent/experiments/rnnt/baseline/second/",
   "data": {
     "train_set": "/home/ubuntu/Data/LibriSpeech/train-clean-100.json",
     "dev_set": "/home/ubuntu/Data/LibriSpeech/dev-clean.json",
     "start_and_end": false
   },
   "optimizer": {
-    "batch_size": 8,
+    "batch_size": 4,
     "epochs": 100,
     "learning_rate": 0.001,
     "momentum": 0.0
@@ -31,13 +31,13 @@
         ]
       ],
       "rnn": {
-        "dim": 1024,
+        "dim": 640,
         "bidirectional": false,
         "layers": 4
       }
     },
     "decoder": {
-      "embedding_dim": 1024,
+      "embedding_dim": 640,
       "layers": 2
     }
   }

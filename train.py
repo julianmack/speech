@@ -23,8 +23,9 @@ def run_epoch(model, optimizer, train_ldr, it, avg_loss):
 
     model_t = 0.0; data_t = 0.0
     end_t = time.time()
+    #tq = tqdm.tqdm(train_ldr)
 
-    for idx, batch in enumerate(tqdm.tqdm(train_ldr)):
+    for idx, batch in enumerate(train_ldr):
         model.train()
         batch = list(batch) #this line isn't necessary w. py 2.7
         start_t = time.time()
@@ -44,21 +45,22 @@ def run_epoch(model, optimizer, train_ldr, it, avg_loss):
 
         exp_w = 0.99
         avg_loss = exp_w * avg_loss + (1 - exp_w) * loss
-        tb.log_value('train_loss', loss, it)
 
-        tq.set_postfix(iter=it, loss=loss,
-                avg_loss=avg_loss, grad_norm=grad_norm,
-                model_time=model_t, data_time=data_t)
+        tb.log_value('train_loss', loss, it)
+        tb.log_value('avg_loss', avg_loss, it)
+        tb.log_value('grad_norm', grad_norm, it)
+
+
         it += 1
 
     return it, avg_loss
 
-def eval_dev(model, ldr, preproc):
+def eval_dev(model, loader, preproc):
     losses = []; all_preds = []; all_labels = []
 
     model.eval()
 
-    for batch in tqdm.tqdm(ldr):
+    for batch in loader:
         batch = list(batch) #this line isn't necessary w. py 2.7
         preds = model.infer(batch)
         loss = model.loss(batch)
@@ -73,6 +75,8 @@ def eval_dev(model, ldr, preproc):
                for l, p in zip(all_labels, all_preds)]
     cer = speech.compute_cer(results)
     print("Dev: Loss {:.3f}, CER {:.3f}".format(loss, cer))
+
+
     return loss, cer
 
 def run(config):
