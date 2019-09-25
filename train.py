@@ -32,6 +32,7 @@ def run_epoch(model, optimizer, train_ldr, it, avg_loss):
         optimizer.zero_grad()
 
         loss = model.loss(batch)
+
         loss.backward()
 
         grad_norm = nn.utils.clip_grad_norm(model.parameters(), 200)
@@ -169,8 +170,8 @@ def restore_or_init_model(config, preproc):
 
     if model_fp is not None:
         #load saved weights
-        weights = torch.load(model_fp)
-        model.load_state_dict(weights)
+        model = torch.load(model_fp)
+
 
     return model
 
