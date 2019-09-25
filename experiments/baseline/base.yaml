@@ -6,7 +6,7 @@ spec:
   template:
     metadata:
       labels:
-        experiment: rnn-t-baseline-2
+        experiment: rnn-t-baseline-3
     spec:
       securityContext:
         supplementalGroups: [5555]

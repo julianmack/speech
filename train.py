@@ -56,24 +56,33 @@ def run_epoch(model, optimizer, train_ldr, it, avg_loss):
     return it, avg_loss
 
 def eval_dev(model, loader, preproc):
-    losses = []; all_preds = []; all_labels = []
+    losses = []
+    dist, total = 0, 0
 
     model.eval()
 
-    for batch in loader:
-        batch = list(batch) #this line isn't necessary w. py 2.7
-        preds = model.infer(batch)
-        loss = model.loss(batch)
-        losses.append(loss.data[0])
-        all_preds.extend(preds)
-        all_labels.extend(batch[1])
+    with torch.no_grad():
+        for idx, batch in enumerate(loader):
+            print("starting dev batch {}".format(idx))
+
+            batch = list(batch) #this line isn't necessary w. py 2.7
+            preds = model.infer(batch)
+            loss = model.loss(batch)
+            losses.append(loss.data[0])
+
+            results = [(preproc.decode(l), preproc.decode(p))
+                       for l, p in zip(batch[1], preds)]
+
+            d, t = speech.utils.score.dist_total(results)
+            dist += d
+            total += t
 
     model.set_train()
 
     loss = sum(losses) / len(losses)
-    results = [(preproc.decode(l), preproc.decode(p))
-               for l, p in zip(all_labels, all_preds)]
-    cer = speech.compute_cer(results)
+
+    cer = dist / total
+
     print("Dev: Loss {:.3f}, CER {:.3f}".format(loss, cer))
 
 
@@ -92,7 +101,7 @@ def run(config):
     train_ldr = loader.make_loader(data_cfg["train_set"],
                         preproc, batch_size)
     dev_ldr = loader.make_loader(data_cfg["dev_set"],
-                        preproc, batch_size)
+                        preproc, batch_size // 2)
 
     # Model
     model = restore_or_init_model(config, preproc)
@@ -150,7 +159,7 @@ def restore_or_init_model(config, preproc):
                 #no tag used when the model is best
                 if model_fn == speech.utils.io.MODEL:
                     assert model_fp is None, "Multiple model.pth files present in `config['save_path']`"
-                    model_fp = file
+                    model_fp = os.path.join(path, file)
 
     #init model randomly
     model_class = eval("models." + model_cfg["class"])
