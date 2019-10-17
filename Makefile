@@ -1,5 +1,5 @@
 IMAGE_NAME=awni-speech
-IMAGE_TAG=first
+IMAGE_TAG=rnnt_loss
 
 
 all: warp transduce
@@ -19,10 +19,10 @@ gcp:
 	docker push gcr.io/myrtle-deepspeech/$(IMAGE_NAME):$(IMAGE_TAG)
 
 
-build:
+build: deps/warp-transducer
 	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
 
-build/push: build gcp	
+build/push: build gcp
 
 
 libs/apex:
@@ -32,6 +32,9 @@ libs/apex:
 clean: cleansmall
 		rm -rf libs
 		find . -type d -name "__pycache*" -exec rm -r {} +
+
+deps/warp-transducer:
+		git clone https://github.com/HawkAaron/warp-transducer deps/warp-transducer
 
 
 cleansmall:

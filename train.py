@@ -28,6 +28,9 @@ def run_epoch(model, optimizer, train_ldr, it, avg_loss):
     for idx, batch in enumerate(train_ldr):
         model.train()
         batch = list(batch) #this line isn't necessary w. py 2.7
+        x, y = batch
+
+
         start_t = time.time()
         optimizer.zero_grad()
 

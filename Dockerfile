@@ -106,6 +106,22 @@ COPY --chown=ubuntu:ubuntu . speech
 RUN cd speech && pip3 install --user .
 
 
+
+#warp-transducer (i.e. warp ctc for rnnt)
+COPY --chown=ubuntu:ubuntu deps deps
+RUN cd /home/ubuntu/deps/warp-transducer && \
+  git reset --hard 059c3eb5690c347eaf5bd08254ae026ef88dd6b7 && \
+  git revert 5cd5d21f22d377ed58e292e8be71c1b47d9f57e9 -n && \
+  mkdir build && \
+  cd build && \
+  cmake .. && \
+  make VERBOSE=1 && \
+  export WARP_RNNT_PATH=`pwd` && \
+  export CUDA_HOME='/usr/local/cuda' && \
+  cd ../pytorch_binding && \
+  python3 setup.py install --user
+
+
 #set env variables for speech repo ---------------------------------------------
 RUN echo "source speech/setup.sh" > .bashrc
 
